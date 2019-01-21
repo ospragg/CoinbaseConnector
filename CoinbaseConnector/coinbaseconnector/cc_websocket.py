@@ -10,16 +10,17 @@ import websocket
 import json
 
 def generate_auth_headers(api_key, api_secret, api_passphrase):
+	# generation of auth parameters, as defined in the Coinbase API docs
 	t_epoch = time.time()
-	message = str(t_epoch) + 'GET' + '/users/self/verify'
+	message = str(t_epoch) + "GET" + "/users/self/verify"
 	hmac_key = base64.b64decode(api_secret)
 	signature = hmac.new(hmac_key, message, hashlib.sha256)
 	signature_b64 = base64.b64encode(signature.digest())
 	return {
-		'signature': signature_b64,
-		'key': api_key,
-		'passphrase': api_passphrase,
-		'timestamp': str(t_epoch),
+		"signature" : signature_b64,
+		"key" : api_key,
+		"passphrase" : api_passphrase,
+		"timestamp" : str(t_epoch),
 	}
 
 class Websocket:
@@ -41,6 +42,7 @@ class Websocket:
 		self.ws_url = url
 		self.wst = None
 		self.ws = None
+		self.msg_buff = []
 		
 		# set up the websocket parameters
 		self.ws_params = {
@@ -54,16 +56,19 @@ class Websocket:
 		#	self.ws_params.update(generate_auth_headers(api_key, api_secret, api_passphrase))
 	
 	def _on_message_(self, ws, msg):
-		print "got message: " + str(msg)
+		self.msg_buff.append(json.loads(msg))
 	
 	def _on_open_(self, ws):
-		print "websocket open"
+		pass
 	
 	def _on_close_(self, ws):
-		print "websocket close"
+		pass
 	
-	def _on_error_(self, ws):
-		print "websocket error"
+	def _on_error_(self, ws, error):
+		# if there's been an error, add an error message to the
+		# buffer and kill the websocket thread
+		self.msg_buff.append(json.loads({"type" : "websocket_error"}))
+		raise Exception("websocket error: " + str(error))
 	
 	def start(self):
 		
@@ -98,4 +103,10 @@ class Websocket:
 		# if the websocket exists, close it
 		if self.ws != None:
 			self.ws.close()
+	
+	def pop_messages(self):
+		# retreive some data from the buffer, and reset the buffer
+		ret_buff = self.msg_buff
+		self.msg_buff = []
+		return ret_buff
 		
