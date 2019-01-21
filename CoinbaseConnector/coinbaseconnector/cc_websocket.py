@@ -2,26 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import time
-import base64
-import hmac
-import hashlib
+import utils
 import threading
 import websocket
 import json
-
-def generate_auth_headers(api_key, api_secret, api_passphrase):
-	# generation of auth parameters, as defined in the Coinbase API docs
-	t_epoch = time.time()
-	message = str(t_epoch) + "GET" + "/users/self/verify"
-	hmac_key = base64.b64decode(api_secret)
-	signature = hmac.new(hmac_key, message, hashlib.sha256)
-	signature_b64 = base64.b64encode(signature.digest())
-	return {
-		"signature" : signature_b64,
-		"key" : api_key,
-		"passphrase" : api_passphrase,
-		"timestamp" : str(t_epoch),
-	}
+import copy
 
 class Websocket:
 	def __init__(self,
@@ -43,6 +28,9 @@ class Websocket:
 		self.wst = None
 		self.ws = None
 		self.msg_buff = []
+		self.api_key = api_key
+		self.api_secret = api_secret
+		self.api_passphrase = api_passphrase
 		
 		# set up the websocket parameters
 		self.ws_params = {
@@ -50,12 +38,10 @@ class Websocket:
 			"product_ids" : [product],
 			"channels" : channels,
 		}
-		
-		# if we've got auth info, generate and add some auth headers
-		#if api_key != "" and api_secret != "" and api_passphrase != "":
-		#	self.ws_params.update(generate_auth_headers(api_key, api_secret, api_passphrase))
 	
 	def _on_message_(self, ws, msg):
+		# add the message to the message buffer
+		# note that this method should run as FAST as possible
 		self.msg_buff.append(json.loads(msg))
 	
 	def _on_open_(self, ws):
@@ -96,7 +82,14 @@ class Websocket:
 			time.sleep(0.01)
 		
 		# subscribe and authenticate
-		self.ws.send(json.dumps(self.ws_params))
+		all_params = copy.copy(self.ws_params)
+		if self.api_key != "" and self.api_secret != "" and self.api_passphrase != "":
+			all_params.update(utils.generate_auth_headers(
+			                      "GET/users/self/verify",
+			                      self.api_key,
+			                      self.api_secret,
+			                      self.api_passphrase))
+		self.ws.send(json.dumps(all_params))
 	
 	def stop(self):
 		
