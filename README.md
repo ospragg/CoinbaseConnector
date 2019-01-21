@@ -1,2 +1,2 @@
 # CoinbaseConnector
-Simple asyncronous python connection to the Coinbase API
+Basic asyncronous python connection to the Coinbase API
