@@ -1,5 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-
-class CoinbaseWebsocket:
+class Websocket:
 	def __init__(self):
-		print "hello"
+		pass

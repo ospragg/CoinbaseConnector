@@ -1,13 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys
 sys.path.append('../')
 
-"""
-#from coinbaseconnector import CoinbaseWebsocket
-from coinbaseconnector.coinbase_websocket import CoinbaseWebsocket
-cw = CoinbaseWebsocket()
-"""
-
-from coinbaseconnector.connector import CoinbaseConnector
+from coinbaseconnector.connector import Connector
 
 
-cc = CoinbaseConnector()
+cc = Connector()
+
+cc.start()
+
+
+cc.stop()

@@ -1,5 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-
-class CoinbaseConnector:
+class Connector:
 	def __init__(self):
-		print "hello"
+		pass
+	
+	def start(self):
+		pass
+	
+	def stop(self):
+		pass
