@@ -1,3 +1,6 @@
+# any files that contain sensitive info
+*/credentials.py
+
 # Mac stuff
 *.DS_Store
 
